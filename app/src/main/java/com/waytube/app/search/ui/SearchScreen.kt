@@ -1,11 +1,10 @@
 package com.waytube.app.search.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.TextFieldState
@@ -34,12 +33,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.waytube.app.R
+import com.waytube.app.common.ui.ChannelItemCard
+import com.waytube.app.common.ui.PlaylistItemCard
+import com.waytube.app.common.ui.VideoItemCard
+import com.waytube.app.common.ui.pagingItems
+import com.waytube.app.search.domain.SearchResult
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel) {
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
+    val isQuerySubmitted by viewModel.isQuerySubmitted.collectAsStateWithLifecycle()
+    val results = viewModel.results.collectAsLazyPagingItems()
 
     val textFieldState = rememberTextFieldState()
 
@@ -49,7 +57,9 @@ fun SearchScreen(viewModel: SearchViewModel) {
 
     SearchScreenContent(
         textFieldState = textFieldState,
-        suggestions = { suggestions }
+        suggestions = { suggestions },
+        results = { if (isQuerySubmitted) results else null },
+        onTrySubmit = viewModel::trySubmit
     )
 }
 
@@ -57,7 +67,9 @@ fun SearchScreen(viewModel: SearchViewModel) {
 @Composable
 private fun SearchScreenContent(
     textFieldState: TextFieldState,
-    suggestions: () -> List<String>
+    suggestions: () -> List<String>,
+    results: () -> LazyPagingItems<SearchResult>?,
+    onTrySubmit: (String) -> Boolean
 ) {
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
@@ -66,8 +78,10 @@ private fun SearchScreenContent(
         SearchBarDefaults.InputField(
             textFieldState = textFieldState,
             searchBarState = searchBarState,
-            onSearch = {
-                scope.launch { searchBarState.animateToCollapsed() }
+            onSearch = { query ->
+                if (onTrySubmit(query)) {
+                    scope.launch { searchBarState.animateToCollapsed() }
+                }
             },
             leadingIcon = {
                 if (searchBarState.targetValue == SearchBarValue.Expanded) {
@@ -122,8 +136,10 @@ private fun SearchScreenContent(
             items(suggestions()) { suggestion ->
                 ListItem(
                     modifier = Modifier.clickable {
-                        textFieldState.setTextAndPlaceCursorAtEnd(suggestion)
-                        scope.launch { searchBarState.animateToCollapsed() }
+                        if (onTrySubmit(suggestion)) {
+                            textFieldState.setTextAndPlaceCursorAtEnd(suggestion)
+                            scope.launch { searchBarState.animateToCollapsed() }
+                        }
                     },
                     leadingContent = {
                         Icon(
@@ -154,6 +170,36 @@ private fun SearchScreenContent(
             )
         }
     ) { contentPadding ->
-        Box(modifier = Modifier.padding(contentPadding))
+        results()?.let { results ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = contentPadding
+            ) {
+                pagingItems(results) { result ->
+                    when (result) {
+                        is SearchResult.Video -> {
+                            VideoItemCard(
+                                item = result.item,
+                                onClick = { /* TODO */ }
+                            )
+                        }
+
+                        is SearchResult.Channel -> {
+                            ChannelItemCard(
+                                item = result.item,
+                                onClick = { /* TODO */ }
+                            )
+                        }
+
+                        is SearchResult.Playlist -> {
+                            PlaylistItemCard(
+                                item = result.item,
+                                onClick = { /* TODO */ }
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

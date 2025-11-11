@@ -4,4 +4,8 @@
         <item quantity="one">%s subscriber</item>
         <item quantity="other">%s subscribers</item>
     </plurals>
+    <plurals name="video_count">
+        <item quantity="one">%s video</item>
+        <item quantity="other">%s videos</item>
+    </plurals>
 </resources>

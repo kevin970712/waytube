@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.waytube.app.channel.ui.ChannelScreen
+import com.waytube.app.playlist.ui.PlaylistScreen
 import com.waytube.app.search.ui.SearchScreen
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
@@ -22,6 +23,9 @@ private data object SearchRoute : NavKey
 
 @Serializable
 private data class ChannelRoute(val id: String) : NavKey
+
+@Serializable
+private data class PlaylistRoute(val id: String) : NavKey
 
 @Composable
 fun NavigationHost() {
@@ -49,12 +53,21 @@ fun NavigationHost() {
                         viewModel = koinViewModel(),
                         onNavigateToChannel = { id ->
                             backStack += ChannelRoute(id)
+                        },
+                        onNavigateToPlaylist = { id ->
+                            backStack += PlaylistRoute(id)
                         }
                     )
                 }
 
                 entry<ChannelRoute> { (id) ->
                     ChannelScreen(
+                        viewModel = koinViewModel { parametersOf(id) }
+                    )
+                }
+
+                entry<PlaylistRoute> { (id) ->
+                    PlaylistScreen(
                         viewModel = koinViewModel { parametersOf(id) }
                     )
                 }

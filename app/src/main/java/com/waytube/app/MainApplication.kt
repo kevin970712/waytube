@@ -3,6 +3,7 @@ package com.waytube.app
 import android.app.Application
 import com.waytube.app.channel.di.channelModule
 import com.waytube.app.network.di.networkModule
+import com.waytube.app.playlist.di.playlistModule
 import com.waytube.app.search.di.searchModule
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
@@ -20,6 +21,7 @@ class MainApplication : Application() {
             modules(
                 channelModule,
                 networkModule,
+                playlistModule,
                 searchModule
             )
         }

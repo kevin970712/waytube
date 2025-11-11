@@ -47,7 +47,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
-    onNavigateToChannel: (String) -> Unit
+    onNavigateToChannel: (String) -> Unit,
+    onNavigateToPlaylist: (String) -> Unit
 ) {
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val isQuerySubmitted by viewModel.isQuerySubmitted.collectAsStateWithLifecycle()
@@ -64,7 +65,8 @@ fun SearchScreen(
         suggestions = { suggestions },
         results = { if (isQuerySubmitted) results else null },
         onTrySubmit = viewModel::trySubmit,
-        onNavigateToChannel = onNavigateToChannel
+        onNavigateToChannel = onNavigateToChannel,
+        onNavigateToPlaylist = onNavigateToPlaylist
     )
 }
 
@@ -75,7 +77,8 @@ private fun SearchScreenContent(
     suggestions: () -> List<String>,
     results: () -> LazyPagingItems<SearchResult>?,
     onTrySubmit: (String) -> Boolean,
-    onNavigateToChannel: (String) -> Unit
+    onNavigateToChannel: (String) -> Unit,
+    onNavigateToPlaylist: (String) -> Unit
 ) {
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
@@ -195,7 +198,7 @@ private fun SearchScreenContent(
                         is SearchResult.Playlist -> {
                             PlaylistItemCard(
                                 item = result.item,
-                                onClick = { /* TODO */ }
+                                onClick = { onNavigateToPlaylist(result.id) }
                             )
                         }
                     }

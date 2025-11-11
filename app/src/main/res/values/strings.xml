@@ -11,4 +11,5 @@
     <string name="message_channel_load_error">There was an error loading the channel</string>
     <string name="message_paging_empty">No items to show</string>
     <string name="message_paging_load_error">There was an error loading items</string>
+    <string name="message_playlist_load_error">There was an error loading the playlist</string>
 </resources>

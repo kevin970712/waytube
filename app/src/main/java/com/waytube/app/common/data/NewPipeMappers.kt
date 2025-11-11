@@ -50,6 +50,7 @@ fun PlaylistInfoItem.toPlaylistItem(): PlaylistItem? =
             id = YoutubePlaylistLinkHandlerFactory.getInstance().getId(url),
             title = name,
             channelName = uploaderName,
-            thumbnailUrl = thumbnails.maxBy { it.height }.url
+            thumbnailUrl = thumbnails.maxBy { it.height }.url,
+            videoCount = streamCount
         )
     } else null

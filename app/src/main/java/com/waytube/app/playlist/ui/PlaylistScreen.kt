@@ -45,14 +45,18 @@ import com.waytube.app.common.ui.toPluralCount
 import com.waytube.app.playlist.domain.Playlist
 
 @Composable
-fun PlaylistScreen(viewModel: PlaylistViewModel) {
+fun PlaylistScreen(
+    viewModel: PlaylistViewModel,
+    onNavigateToVideo: (String) -> Unit
+) {
     val playlistState by viewModel.playlistState.collectAsStateWithLifecycle()
     val videoItems = viewModel.videoItems.collectAsLazyPagingItems()
 
     PlaylistScreenContent(
         playlistState = { playlistState },
         videoItems = videoItems,
-        onRetry = viewModel::retry
+        onRetry = viewModel::retry,
+        onNavigateToVideo = onNavigateToVideo
     )
 }
 
@@ -60,7 +64,8 @@ fun PlaylistScreen(viewModel: PlaylistViewModel) {
 private fun PlaylistScreenContent(
     playlistState: () -> UiState<Playlist>,
     videoItems: LazyPagingItems<VideoItem>,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onNavigateToVideo: (String) -> Unit
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -116,7 +121,7 @@ private fun PlaylistScreenContent(
                     pagingItems(videoItems) { item ->
                         VideoItemCard(
                             item = item,
-                            onClick = { /* TODO */ }
+                            onClick = { onNavigateToVideo(item.id) }
                         )
                     }
                 }

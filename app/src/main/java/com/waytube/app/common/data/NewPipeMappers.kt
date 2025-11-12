@@ -23,14 +23,17 @@ fun StreamInfoItem.toVideoItem(): VideoItem? {
             title = name,
             channelName = uploaderName,
             thumbnailUrl = thumbnailUrl,
-            duration = duration.seconds
+            duration = duration.seconds,
+            viewCount = viewCount,
+            uploadedAt = uploadDate?.offsetDateTime()?.toInstant()
         )
 
         StreamType.LIVE_STREAM -> VideoItem.Live(
             id = id,
             title = name,
             channelName = uploaderName,
-            thumbnailUrl = thumbnailUrl
+            thumbnailUrl = thumbnailUrl,
+            viewerCount = viewCount
         )
 
         else -> null

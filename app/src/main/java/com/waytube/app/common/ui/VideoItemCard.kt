@@ -7,12 +7,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.waytube.app.R
 import com.waytube.app.common.domain.VideoItem
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -53,6 +55,29 @@ fun VideoItemCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Text(
+                when (item) {
+                    is VideoItem.Regular -> listOfNotNull(
+                        pluralStringResource(
+                            R.plurals.view_count,
+                            item.viewCount.toPluralCount(),
+                            item.viewCount.toCompactString()
+                        ),
+                        item.uploadedAt?.toRelativeTimeString()
+                    ).joinToString(stringResource(R.string.separator_bullet))
+
+                    is VideoItem.Live -> pluralStringResource(
+                        R.plurals.viewer_count,
+                        item.viewerCount.toPluralCount(),
+                        item.viewerCount.toCompactString()
+                    )
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     )
 }
@@ -67,7 +92,9 @@ private fun VideoItemCardPreview() {
                 title = "Example video",
                 channelName = "Example channel",
                 thumbnailUrl = "",
-                duration = 12.minutes + 34.seconds
+                duration = 12.minutes + 34.seconds,
+                viewCount = 1_234_567,
+                uploadedAt = Instant.now().minus(14, ChronoUnit.DAYS)
             ),
             onClick = {}
         )

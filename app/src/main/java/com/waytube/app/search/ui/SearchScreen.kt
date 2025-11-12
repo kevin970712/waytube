@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
+    onNavigateToVideo: (String) -> Unit,
     onNavigateToChannel: (String) -> Unit,
     onNavigateToPlaylist: (String) -> Unit
 ) {
@@ -65,6 +66,7 @@ fun SearchScreen(
         suggestions = { suggestions },
         results = { if (isQuerySubmitted) results else null },
         onTrySubmit = viewModel::trySubmit,
+        onNavigateToVideo = onNavigateToVideo,
         onNavigateToChannel = onNavigateToChannel,
         onNavigateToPlaylist = onNavigateToPlaylist
     )
@@ -77,6 +79,7 @@ private fun SearchScreenContent(
     suggestions: () -> List<String>,
     results: () -> LazyPagingItems<SearchResult>?,
     onTrySubmit: (String) -> Boolean,
+    onNavigateToVideo: (String) -> Unit,
     onNavigateToChannel: (String) -> Unit,
     onNavigateToPlaylist: (String) -> Unit
 ) {
@@ -184,7 +187,7 @@ private fun SearchScreenContent(
                         is SearchResult.Video -> {
                             VideoItemCard(
                                 item = result.item,
-                                onClick = { /* TODO */ }
+                                onClick = { onNavigateToVideo(result.id) }
                             )
                         }
 

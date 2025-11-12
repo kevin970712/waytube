@@ -47,13 +47,17 @@ import com.waytube.app.common.ui.toCompactString
 import com.waytube.app.common.ui.toPluralCount
 
 @Composable
-fun ChannelScreen(viewModel: ChannelViewModel) {
+fun ChannelScreen(
+    viewModel: ChannelViewModel,
+    onNavigateToVideo: (String) -> Unit
+) {
     val channelState by viewModel.channelState.collectAsStateWithLifecycle()
 
     ChannelScreenContent(
         channelState = { channelState },
         videoItems = viewModel.videoItems.collectAsLazyPagingItems(),
         onRetry = viewModel::retry,
+        onNavigateToVideo = onNavigateToVideo
     )
 }
 
@@ -62,7 +66,8 @@ fun ChannelScreen(viewModel: ChannelViewModel) {
 private fun ChannelScreenContent(
     channelState: () -> UiState<Channel>,
     videoItems: LazyPagingItems<VideoItem>,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onNavigateToVideo: (String) -> Unit
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -118,7 +123,7 @@ private fun ChannelScreenContent(
                     pagingItems(videoItems) { item ->
                         VideoItemCard(
                             item = item,
-                            onClick = { /* TODO */ }
+                            onClick = { onNavigateToVideo(item.id) }
                         )
                     }
                 }

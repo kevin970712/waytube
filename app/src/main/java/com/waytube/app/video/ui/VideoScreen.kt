@@ -18,9 +18,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
 import com.waytube.app.R
+import com.waytube.app.common.ui.AppColorScheme
 import com.waytube.app.common.ui.StateMessage
 import com.waytube.app.common.ui.UiState
-import com.waytube.app.common.ui.darkColorScheme
 import com.waytube.app.video.domain.Video
 
 @Composable
@@ -41,7 +41,7 @@ private fun VideoScreenContent(
     player: () -> Player?,
     onRetry: () -> Unit
 ) {
-    MaterialTheme(colorScheme = darkColorScheme) {
+    MaterialTheme(colorScheme = AppColorScheme.Dark) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.scrim,
             contentColor = MaterialTheme.colorScheme.onSurface,

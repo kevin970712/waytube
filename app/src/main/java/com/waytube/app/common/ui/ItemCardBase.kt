@@ -65,15 +65,17 @@ private fun ItemCardImageOverlay(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    Text(
-        text = text,
-        modifier = modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(darkColorScheme.scrim.copy(alpha = 0.7f))
-            .padding(3.dp),
-        style = MaterialTheme.typography.labelSmall.copy(
-            lineHeightStyle = LineHeightStyle.Default
-        ),
-        color = darkColorScheme.onSurface
-    )
+    MaterialTheme(colorScheme = AppColorScheme.Dark) {
+        Text(
+            text = text,
+            modifier = modifier
+                .clip(MaterialTheme.shapes.extraSmall)
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f))
+                .padding(3.dp),
+            style = MaterialTheme.typography.labelSmall.copy(
+                lineHeightStyle = LineHeightStyle.Default
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
 }

@@ -10,7 +10,7 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = if (darkTheme) darkColorScheme else lightColorScheme,
+        colorScheme = if (darkTheme) AppColorScheme.Dark else AppColorScheme.Light,
         content = content
     )
 }

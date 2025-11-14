@@ -10,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -19,6 +20,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.waytube.app.channel.ui.ChannelScreen
+import com.waytube.app.navigation.domain.DeepLinkResult
 import com.waytube.app.playlist.ui.PlaylistScreen
 import com.waytube.app.search.ui.SearchScreen
 import com.waytube.app.video.ui.VideoScreen
@@ -40,6 +42,7 @@ private data class PlaylistRoute(val id: String) : NavKey
 
 @Composable
 fun NavigationHost(
+    viewModel: NavigationViewModel,
     videoViewModel: VideoViewModel,
     onSetVideoImmersiveMode: (Boolean) -> Unit,
     onKeepScreenAwake: (Boolean) -> Unit
@@ -48,6 +51,26 @@ fun NavigationHost(
     val isVideoPlaying by videoViewModel.isPlaying.collectAsStateWithLifecycle()
 
     val backStack = rememberNavBackStack(SearchRoute)
+
+    LaunchedEffect(Unit) {
+        viewModel.deepLinkResult.collect { result ->
+            when (result) {
+                is DeepLinkResult.Video -> {
+                    videoViewModel.play(result.id)
+                }
+
+                is DeepLinkResult.Channel -> {
+                    backStack += ChannelRoute(result.id)
+                    videoViewModel.requestStop()
+                }
+
+                is DeepLinkResult.Playlist -> {
+                    backStack += PlaylistRoute(result.id)
+                    videoViewModel.requestStop()
+                }
+            }
+        }
+    }
 
     if (isVideoActive) {
         DisposableEffect(Unit) {

@@ -2,6 +2,7 @@ package com.waytube.app
 
 import android.app.Application
 import com.waytube.app.channel.di.channelModule
+import com.waytube.app.navigation.di.navigationModule
 import com.waytube.app.network.di.networkModule
 import com.waytube.app.playlist.di.playlistModule
 import com.waytube.app.search.di.searchModule
@@ -21,6 +22,7 @@ class MainApplication : Application() {
             androidLogger()
             modules(
                 channelModule,
+                navigationModule,
                 networkModule,
                 playlistModule,
                 searchModule,

@@ -15,13 +15,13 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.waytube.app.common.ui.UiState
+import com.waytube.app.common.ui.UiStateLoader
 import com.waytube.app.video.domain.Video
 import com.waytube.app.video.domain.VideoRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
@@ -60,7 +59,7 @@ class VideoViewModel(
         initialValue = null
     )
 
-    private val fetchTrigger = MutableSharedFlow<Unit>()
+    private val videoLoader = UiStateLoader()
 
     private var isAutoplayRequested = false
 
@@ -69,17 +68,7 @@ class VideoViewModel(
     val videoState = videoId
         .flatMapLatest { id ->
             if (id != null) {
-                fetchTrigger
-                    .onStart { emit(Unit) }
-                    .transformLatest {
-                        emit(UiState.Loading)
-                        emit(
-                            repository.getVideo(id).fold(
-                                onSuccess = { UiState.Data(it) },
-                                onFailure = { UiState.Error(it) }
-                            )
-                        )
-                    }
+                videoLoader.bind { repository.getVideo(id) }
             } else flowOf<UiState<Video>?>(null)
         }
         .stateIn(
@@ -225,7 +214,7 @@ class VideoViewModel(
     }
 
     fun retry() {
-        viewModelScope.launch { fetchTrigger.emit(Unit) }
+        viewModelScope.launch { videoLoader.retry() }
     }
 
     fun requestStop() {

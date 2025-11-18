@@ -7,16 +7,14 @@ import androidx.paging.cachedIn
 import com.waytube.app.channel.domain.Channel
 import com.waytube.app.channel.domain.ChannelRepository
 import com.waytube.app.common.ui.UiState
+import com.waytube.app.common.ui.UiStateLoader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -24,19 +22,10 @@ class ChannelViewModel(
     private val id: String,
     private val repository: ChannelRepository
 ) : ViewModel() {
-    private val fetchTrigger = MutableSharedFlow<Unit>()
+    private val channelLoader = UiStateLoader()
 
-    val channelState = fetchTrigger
-        .onStart { emit(Unit) }
-        .transformLatest {
-            emit(UiState.Loading)
-            emit(
-                repository.getChannel(id).fold(
-                    onSuccess = { UiState.Data(it) },
-                    onFailure = { UiState.Error(it) }
-                )
-            )
-        }
+    val channelState = channelLoader
+        .bind { repository.getChannel(id) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
@@ -52,6 +41,6 @@ class ChannelViewModel(
         .cachedIn(viewModelScope)
 
     fun retry() {
-        viewModelScope.launch { fetchTrigger.emit(Unit) }
+        viewModelScope.launch { channelLoader.retry() }
     }
 }

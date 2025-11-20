@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -58,15 +59,20 @@ class VideoViewModel(
         initialValue = null
     )
 
+    private val skippedSegmentIds = savedStateHandle.getMutableStateFlow(
+        key = "skipped_segment_ids",
+        initialValue = emptyList<String>()
+    )
+
     private val videoLoader = UiStateLoader()
+
+    private val skipSegmentsLoader = UiStateLoader()
 
     private var isAutoplayRequested = false
 
     val videoState = videoId
         .flatMapLatest { id ->
-            if (id != null) {
-                videoLoader.bind { repository.getVideo(id) }
-            } else flowOf<UiState<Video>?>(null)
+            if (id != null) videoLoader.bind { repository.getVideo(id) } else flowOf(null)
         }
         .stateIn(
             scope = viewModelScope,
@@ -97,6 +103,20 @@ class VideoViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5.seconds),
             initialValue = false
+        )
+
+    val skipSegments = videoState
+        .map { ((it as? UiState.Data)?.data as? Video.Content.Regular)?.id }
+        .distinctUntilChanged()
+        .flatMapLatest { id ->
+            if (id != null) {
+                skipSegmentsLoader.bind { repository.getSkipSegments(id) }
+            } else flowOf(null)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = null
         )
 
     init {
@@ -197,6 +217,25 @@ class VideoViewModel(
             }
             .onEach { positionMs.value = it }
             .launchIn(viewModelScope)
+
+        combine(
+            player,
+            positionMs.map { it?.milliseconds },
+            skipSegments.map { (it as? UiState.Data)?.data }.distinctUntilChanged()
+        ) { player, position, skipSegments -> Triple(player, position, skipSegments) }
+            .onEach { (player, position, skipSegments) ->
+                if (position != null) {
+                    val segment = skipSegments?.find { (id, start, end) ->
+                        position in start..end && skippedSegmentIds.value.contains(id).not()
+                    }
+
+                    if (segment != null) {
+                        player.seekTo(segment.end.inWholeMilliseconds)
+                        skippedSegmentIds.value += segment.id
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun play(id: String) {
@@ -204,6 +243,7 @@ class VideoViewModel(
             videoId.value = id
             positionMs.value = null
             isAutoplayRequested = true
+            skippedSegmentIds.value = emptyList()
         }
     }
 

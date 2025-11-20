@@ -61,12 +61,12 @@ fun NavigationHost(
 
                 is DeepLinkResult.Channel -> {
                     backStack += ChannelRoute(result.id)
-                    videoViewModel.requestStop()
+                    videoViewModel.stop()
                 }
 
                 is DeepLinkResult.Playlist -> {
                     backStack += PlaylistRoute(result.id)
-                    videoViewModel.requestStop()
+                    videoViewModel.stop()
                 }
             }
         }
@@ -93,7 +93,7 @@ fun NavigationHost(
             backStack = if (isVideoActive) backStack + VideoRoute else backStack,
             onBack = {
                 if (isVideoActive) {
-                    videoViewModel.requestStop()
+                    videoViewModel.stop()
                 } else {
                     backStack.removeLastOrNull()
                 }
@@ -118,11 +118,11 @@ fun NavigationHost(
                         onNavigateToVideo = videoViewModel::play,
                         onNavigateToChannel = { id ->
                             backStack += ChannelRoute(id)
-                            videoViewModel.requestStop()
+                            videoViewModel.stop()
                         },
                         onNavigateToPlaylist = { id ->
                             backStack += PlaylistRoute(id)
-                            videoViewModel.requestStop()
+                            videoViewModel.stop()
                         }
                     )
                 }
@@ -137,12 +137,6 @@ fun NavigationHost(
                         EnterTransition.None togetherWith slideOutVertically { it }
                     }
                 ) {
-                    if (!isVideoActive) {
-                        DisposableEffect(Unit) {
-                            onDispose(videoViewModel::stop)
-                        }
-                    }
-
                     VideoScreen(viewModel = videoViewModel)
                 }
 

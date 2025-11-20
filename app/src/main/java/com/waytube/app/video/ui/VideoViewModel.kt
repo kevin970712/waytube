@@ -22,7 +22,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.callbackFlow
@@ -63,8 +62,6 @@ class VideoViewModel(
 
     private var isAutoplayRequested = false
 
-    private val isStopRequested = MutableStateFlow(false)
-
     val videoState = videoId
         .flatMapLatest { id ->
             if (id != null) {
@@ -77,10 +74,8 @@ class VideoViewModel(
             initialValue = null
         )
 
-    val isActive = combine(
-        videoState,
-        isStopRequested
-    ) { videoState, isStopRequested -> videoState != null && !isStopRequested }
+    val isActive = videoState
+        .map { it != null }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5.seconds),
@@ -210,15 +205,10 @@ class VideoViewModel(
             positionMs.value = null
             isAutoplayRequested = true
         }
-        isStopRequested.value = false
     }
 
     fun retry() {
         viewModelScope.launch { videoLoader.retry() }
-    }
-
-    fun requestStop() {
-        isStopRequested.value = true
     }
 
     fun stop() {

@@ -5,13 +5,13 @@ import kotlin.time.Duration
 
 sealed interface VideoItem : Identifiable {
     val title: String
-    val channelName: String
+    val channelName: String?
     val thumbnailUrl: String
 
     data class Regular(
         override val id: String,
         override val title: String,
-        override val channelName: String,
+        override val channelName: String?,
         override val thumbnailUrl: String,
         val duration: Duration,
         val viewCount: Long,
@@ -21,7 +21,7 @@ sealed interface VideoItem : Identifiable {
     data class Live(
         override val id: String,
         override val title: String,
-        override val channelName: String,
+        override val channelName: String?,
         override val thumbnailUrl: String,
         val viewerCount: Long
     ) : VideoItem

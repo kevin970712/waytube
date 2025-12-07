@@ -48,13 +48,15 @@ fun VideoItemCard(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            Text(
-                text = item.channelName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            item.channelName?.let { channelName ->
+                Text(
+                    text = channelName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Text(
                 when (item) {

@@ -19,10 +19,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,12 +38,14 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.waytube.app.R
 import com.waytube.app.common.domain.VideoItem
 import com.waytube.app.common.ui.BackButton
+import com.waytube.app.common.ui.ItemMenuSheet
 import com.waytube.app.common.ui.StateMessage
 import com.waytube.app.common.ui.StyledImage
 import com.waytube.app.common.ui.UiState
 import com.waytube.app.common.ui.VideoItemCard
 import com.waytube.app.common.ui.pagingItems
 import com.waytube.app.common.ui.rememberNavigationBackAction
+import com.waytube.app.common.ui.shareText
 import com.waytube.app.common.ui.toCompactString
 import com.waytube.app.common.ui.toPluralCount
 import com.waytube.app.playlist.domain.Playlist
@@ -46,13 +53,16 @@ import com.waytube.app.playlist.domain.Playlist
 @Composable
 fun PlaylistScreen(
     viewModel: PlaylistViewModel,
-    onNavigateToVideo: (String) -> Unit
+    onNavigateToVideo: (String) -> Unit,
+    onNavigateToChannel: (String) -> Unit
 ) {
     PlaylistScreenContent(
         playlistState = viewModel.playlistState.collectAsStateWithLifecycle()::value,
         videoItems = viewModel.videoItems.collectAsLazyPagingItems(),
         onRetry = viewModel::retry,
-        onNavigateToVideo = onNavigateToVideo
+        onShare = LocalContext.current::shareText,
+        onNavigateToVideo = onNavigateToVideo,
+        onNavigateToChannel = onNavigateToChannel
     )
 }
 
@@ -61,9 +71,23 @@ private fun PlaylistScreenContent(
     playlistState: () -> UiState<Playlist>,
     videoItems: LazyPagingItems<VideoItem>,
     onRetry: () -> Unit,
-    onNavigateToVideo: (String) -> Unit
+    onShare: (String) -> Unit,
+    onNavigateToVideo: (String) -> Unit,
+    onNavigateToChannel: (String) -> Unit
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    var selectedMenuItem by remember { mutableStateOf<VideoItem?>(null) }
+
+    selectedMenuItem?.let { item ->
+        ItemMenuSheet(
+            onDismissRequest = { selectedMenuItem = null },
+            onShare = { onShare(item.url) },
+            onNavigateToChannel = item.channelId?.let { id ->
+                { onNavigateToChannel(id) }
+            }
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
@@ -132,7 +156,8 @@ private fun PlaylistScreenContent(
                             pagingItems(videoItems) { item ->
                                 VideoItemCard(
                                     item = item,
-                                    onClick = { onNavigateToVideo(item.id) }
+                                    onClick = { onNavigateToVideo(item.id) },
+                                    onLongClick = { selectedMenuItem = item }
                                 )
                             }
                         }

@@ -32,9 +32,13 @@ import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,9 +49,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.waytube.app.R
 import com.waytube.app.common.ui.BackButton
 import com.waytube.app.common.ui.ChannelItemCard
+import com.waytube.app.common.ui.ItemMenuSheet
 import com.waytube.app.common.ui.PlaylistItemCard
 import com.waytube.app.common.ui.VideoItemCard
 import com.waytube.app.common.ui.pagingItems
+import com.waytube.app.common.ui.shareText
 import com.waytube.app.search.domain.SearchFilter
 import com.waytube.app.search.domain.SearchResult
 import kotlinx.coroutines.launch
@@ -75,6 +81,7 @@ fun SearchScreen(
         results = { if (isQuerySubmitted) results else null },
         onTrySubmit = viewModel::trySubmit,
         onFilterClick = viewModel::toggleFilter,
+        onShare = LocalContext.current::shareText,
         onNavigateToVideo = onNavigateToVideo,
         onNavigateToChannel = onNavigateToChannel,
         onNavigateToPlaylist = onNavigateToPlaylist
@@ -90,12 +97,15 @@ private fun SearchScreenContent(
     results: () -> LazyPagingItems<SearchResult>?,
     onTrySubmit: (String) -> Boolean,
     onFilterClick: (SearchFilter) -> Unit,
+    onShare: (String) -> Unit,
     onNavigateToVideo: (String) -> Unit,
     onNavigateToChannel: (String) -> Unit,
     onNavigateToPlaylist: (String) -> Unit
 ) {
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
+
+    var selectedMenuResult by remember { mutableStateOf<SearchResult?>(null) }
 
     val inputField = @Composable {
         SearchBarDefaults.InputField(
@@ -134,6 +144,26 @@ private fun SearchScreenContent(
                     )
                 }
             }) else null
+        )
+    }
+
+    selectedMenuResult?.let { result ->
+        ItemMenuSheet(
+            onDismissRequest = { selectedMenuResult = null },
+            onShare = {
+                onShare(
+                    when (result) {
+                        is SearchResult.Video -> result.item.url
+                        is SearchResult.Channel -> result.item.url
+                        is SearchResult.Playlist -> result.item.url
+                    }
+                )
+            },
+            onNavigateToChannel = when (result) {
+                is SearchResult.Video -> result.item.channelId
+                is SearchResult.Channel -> null
+                is SearchResult.Playlist -> result.item.channelId
+            }?.let { id -> { onNavigateToChannel(id) } }
         )
     }
 
@@ -232,21 +262,24 @@ private fun SearchScreenContent(
                         is SearchResult.Video -> {
                             VideoItemCard(
                                 item = result.item,
-                                onClick = { onNavigateToVideo(result.id) }
+                                onClick = { onNavigateToVideo(result.id) },
+                                onLongClick = { selectedMenuResult = result }
                             )
                         }
 
                         is SearchResult.Channel -> {
                             ChannelItemCard(
                                 item = result.item,
-                                onClick = { onNavigateToChannel(result.id) }
+                                onClick = { onNavigateToChannel(result.id) },
+                                onLongClick = { selectedMenuResult = result }
                             )
                         }
 
                         is SearchResult.Playlist -> {
                             PlaylistItemCard(
                                 item = result.item,
-                                onClick = { onNavigateToPlaylist(result.id) }
+                                onClick = { onNavigateToPlaylist(result.id) },
+                                onLongClick = { selectedMenuResult = result }
                             )
                         }
                     }

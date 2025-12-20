@@ -1,6 +1,7 @@
 package com.waytube.app.common.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ItemCardBase(
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     verticalAlignment: Alignment.Vertical = Alignment.Top,
     imageOverlayText: String? = null,
@@ -29,8 +31,10 @@ fun ItemCardBase(
     detailsContent: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
-        onClick = onClick,
-        modifier = modifier
+        modifier = modifier.combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick
+        )
     ) {
         Row(
             modifier = Modifier

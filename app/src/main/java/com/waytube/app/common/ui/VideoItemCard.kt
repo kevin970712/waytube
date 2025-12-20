@@ -22,10 +22,12 @@ import kotlin.time.Duration.Companion.seconds
 fun VideoItemCard(
     item: VideoItem,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     ItemCardBase(
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = modifier,
         imageOverlayText = when (item) {
             is VideoItem.Regular -> item.duration.toFormattedString()
@@ -91,7 +93,9 @@ private fun VideoItemCardPreview() {
         VideoItemCard(
             item = VideoItem.Regular(
                 id = "",
+                url = "",
                 title = "Example video",
+                channelId = "",
                 channelName = "Example channel",
                 thumbnailUrl = "",
                 duration = 12.minutes + 34.seconds,

@@ -15,12 +15,17 @@ import kotlin.time.Duration.Companion.seconds
 
 fun StreamInfoItem.toVideoItem(): VideoItem? {
     val id = YoutubeStreamLinkHandlerFactory.getInstance().getId(url)
+    val channelId = uploaderUrl?.let { url ->
+        YoutubeChannelLinkHandlerFactory.getInstance().getId(url)
+    }
     val thumbnailUrl = thumbnails.maxBy { it.height }.url
 
     return when (streamType) {
         StreamType.VIDEO_STREAM -> VideoItem.Regular(
             id = id,
+            url = url,
             title = name,
+            channelId = channelId,
             channelName = uploaderName,
             thumbnailUrl = thumbnailUrl,
             duration = duration.seconds,
@@ -30,7 +35,9 @@ fun StreamInfoItem.toVideoItem(): VideoItem? {
 
         StreamType.LIVE_STREAM -> VideoItem.Live(
             id = id,
+            url = url,
             title = name,
+            channelId = channelId,
             channelName = uploaderName,
             thumbnailUrl = thumbnailUrl,
             viewerCount = viewCount
@@ -42,6 +49,7 @@ fun StreamInfoItem.toVideoItem(): VideoItem? {
 
 fun ChannelInfoItem.toChannelItem(): ChannelItem = ChannelItem(
     id = YoutubeChannelLinkHandlerFactory.getInstance().getId(url),
+    url = url,
     name = name,
     avatarUrl = thumbnails.maxBy { it.height }.url,
     subscriberCount = subscriberCount.takeIf { it != -1L }
@@ -51,7 +59,11 @@ fun PlaylistInfoItem.toPlaylistItem(): PlaylistItem? =
     if (playlistType == PlaylistInfo.PlaylistType.NORMAL) {
         PlaylistItem(
             id = YoutubePlaylistLinkHandlerFactory.getInstance().getId(url),
+            url = url,
             title = name,
+            channelId = uploaderUrl?.let { url ->
+                YoutubeChannelLinkHandlerFactory.getInstance().getId(url)
+            },
             channelName = uploaderName,
             thumbnailUrl = thumbnails.maxBy { it.height }.url,
             videoCount = streamCount

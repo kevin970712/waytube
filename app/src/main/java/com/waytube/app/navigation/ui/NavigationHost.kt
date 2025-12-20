@@ -150,7 +150,11 @@ fun NavigationHost(
                 entry<PlaylistRoute> { (id) ->
                     PlaylistScreen(
                         viewModel = koinViewModel { parametersOf(id) },
-                        onNavigateToVideo = videoViewModel::play
+                        onNavigateToVideo = videoViewModel::play,
+                        onNavigateToChannel = { id ->
+                            backStack += ChannelRoute(id)
+                            videoViewModel.stop()
+                        }
                     )
                 }
             }

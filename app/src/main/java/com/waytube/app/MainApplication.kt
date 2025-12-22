@@ -5,6 +5,7 @@ import com.waytube.app.channel.di.channelModule
 import com.waytube.app.navigation.di.navigationModule
 import com.waytube.app.network.di.networkModule
 import com.waytube.app.playlist.di.playlistModule
+import com.waytube.app.preferences.di.preferencesModule
 import com.waytube.app.search.di.searchModule
 import com.waytube.app.video.di.videoModule
 import org.koin.android.ext.android.get
@@ -25,6 +26,7 @@ class MainApplication : Application() {
                 navigationModule,
                 networkModule,
                 playlistModule,
+                preferencesModule,
                 searchModule,
                 videoModule
             )

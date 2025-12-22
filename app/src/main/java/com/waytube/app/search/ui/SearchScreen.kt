@@ -92,7 +92,7 @@ fun SearchScreen(
 @Composable
 private fun SearchScreenContent(
     textFieldState: TextFieldState,
-    suggestions: () -> List<String>,
+    suggestions: () -> SearchSuggestions,
     selectedFilter: () -> SearchFilter?,
     results: () -> LazyPagingItems<SearchResult>?,
     onTrySubmit: (String) -> Boolean,
@@ -181,31 +181,38 @@ private fun SearchScreenContent(
                 .only(WindowInsetsSides.Bottom)
                 .asPaddingValues()
         ) {
-            items(suggestions()) { suggestion ->
-                ListItem(
-                    modifier = Modifier.clickable {
-                        if (onTrySubmit(suggestion)) {
-                            textFieldState.setTextAndPlaceCursorAtEnd(suggestion)
-                            scope.launch { searchBarState.animateToCollapsed() }
-                        }
-                    },
-                    leadingContent = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_search),
-                            contentDescription = null
+            suggestions().run {
+                items(items) { suggestion ->
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            if (onTrySubmit(suggestion)) {
+                                textFieldState.setTextAndPlaceCursorAtEnd(suggestion)
+                                scope.launch { searchBarState.animateToCollapsed() }
+                            }
+                        },
+                        leadingContent = {
+                            Icon(
+                                painter = painterResource(
+                                    when (type) {
+                                        SearchSuggestions.Type.HISTORY -> R.drawable.ic_history
+                                        SearchSuggestions.Type.REMOTE -> R.drawable.ic_search
+                                    }
+                                ),
+                                contentDescription = null
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                text = suggestion,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = Color.Transparent
                         )
-                    },
-                    headlineContent = {
-                        Text(
-                            text = suggestion,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
                     )
-                )
+                }
             }
         }
     }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.waytube.app.playlist.ui
 
 import androidx.compose.foundation.layout.Box
@@ -66,6 +64,7 @@ fun PlaylistScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlaylistScreenContent(
     playlistState: () -> UiState<Playlist>,

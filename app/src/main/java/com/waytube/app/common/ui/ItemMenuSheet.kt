@@ -71,7 +71,10 @@ fun ItemMenuSheet(
                 },
                 modifier = Modifier.clickable {
                     onClick()
-                    scope.launch { sheetState.hide() }
+                    scope.launch {
+                        sheetState.hide()
+                        onDismissRequest()
+                    }
                 },
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent

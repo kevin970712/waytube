@@ -44,6 +44,7 @@ import com.waytube.app.common.ui.StateMessage
 import com.waytube.app.common.ui.StyledImage
 import com.waytube.app.common.ui.UiState
 import com.waytube.app.common.ui.VideoItemCard
+import com.waytube.app.common.ui.VideoPlayMode
 import com.waytube.app.common.ui.pagingItems
 import com.waytube.app.common.ui.rememberNavigationBackAction
 import com.waytube.app.common.ui.shareText
@@ -59,7 +60,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun PlaylistScreen(
     viewModel: PlaylistViewModel,
-    onNavigateToVideo: (String) -> Unit,
+    onPlayVideo: (String, VideoPlayMode) -> Unit,
     onNavigateToChannel: (String) -> Unit
 ) {
     PlaylistScreenContent(
@@ -67,7 +68,7 @@ fun PlaylistScreen(
         videoItems = viewModel.videoItems.collectAsLazyPagingItems(),
         onRetry = viewModel::retry,
         onShare = LocalContext.current::shareText,
-        onNavigateToVideo = onNavigateToVideo,
+        onPlayVideo = onPlayVideo,
         onNavigateToChannel = onNavigateToChannel
     )
 }
@@ -79,7 +80,7 @@ private fun PlaylistScreenContent(
     videoItems: LazyPagingItems<VideoItem>,
     onRetry: () -> Unit,
     onShare: (String) -> Unit,
-    onNavigateToVideo: (String) -> Unit,
+    onPlayVideo: (String, VideoPlayMode) -> Unit,
     onNavigateToChannel: (String) -> Unit
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -90,6 +91,7 @@ private fun PlaylistScreenContent(
         ItemMenuSheet(
             onDismissRequest = { selectedMenuItem = null },
             onShare = { onShare(item.url) },
+            onPlayInBackground = { onPlayVideo(item.id, VideoPlayMode.BACKGROUND) },
             onNavigateToChannel = item.channelId?.let { id ->
                 { onNavigateToChannel(id) }
             }
@@ -163,7 +165,7 @@ private fun PlaylistScreenContent(
                             pagingItems(videoItems) { item ->
                                 VideoItemCard(
                                     item = item,
-                                    onClick = { onNavigateToVideo(item.id) },
+                                    onClick = { onPlayVideo(item.id, VideoPlayMode.FOREGROUND) },
                                     onLongClick = { selectedMenuItem = item }
                                 )
                             }
@@ -254,7 +256,7 @@ private fun PlaylistScreenContentPreview() {
             videoItems = videoItems,
             onRetry = {},
             onShare = {},
-            onNavigateToVideo = {},
+            onPlayVideo = { _, _ -> },
             onNavigateToChannel = {}
         )
     }

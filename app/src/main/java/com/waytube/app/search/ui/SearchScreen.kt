@@ -42,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,6 +56,7 @@ import com.waytube.app.common.ui.ChannelItemCard
 import com.waytube.app.common.ui.ItemMenuSheet
 import com.waytube.app.common.ui.PlaylistItemCard
 import com.waytube.app.common.ui.VideoItemCard
+import com.waytube.app.common.ui.VideoPlayMode
 import com.waytube.app.common.ui.pagingItems
 import com.waytube.app.common.ui.shareText
 import com.waytube.app.search.domain.SearchFilter
@@ -71,7 +71,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
-    onNavigateToVideo: (String) -> Unit,
+    onPlayVideo: (String, VideoPlayMode) -> Unit,
     onNavigateToChannel: (String) -> Unit,
     onNavigateToPlaylist: (String) -> Unit
 ) {
@@ -92,7 +92,7 @@ fun SearchScreen(
         onTrySubmit = viewModel::trySubmit,
         onFilterClick = viewModel::toggleFilter,
         onShare = LocalContext.current::shareText,
-        onNavigateToVideo = onNavigateToVideo,
+        onPlayVideo = onPlayVideo,
         onNavigateToChannel = onNavigateToChannel,
         onNavigateToPlaylist = onNavigateToPlaylist
     )
@@ -108,7 +108,7 @@ private fun SearchScreenContent(
     onTrySubmit: (String) -> Boolean,
     onFilterClick: (SearchFilter) -> Unit,
     onShare: (String) -> Unit,
-    onNavigateToVideo: (String) -> Unit,
+    onPlayVideo: (String, VideoPlayMode) -> Unit,
     onNavigateToChannel: (String) -> Unit,
     onNavigateToPlaylist: (String) -> Unit
 ) {
@@ -168,6 +168,9 @@ private fun SearchScreenContent(
                         is SearchResult.Playlist -> result.item.url
                     }
                 )
+            },
+            onPlayInBackground = (result as? SearchResult.Video)?.let {
+                { onPlayVideo(it.item.id, VideoPlayMode.BACKGROUND) }
             },
             onNavigateToChannel = when (result) {
                 is SearchResult.Video -> result.item.channelId
@@ -279,7 +282,7 @@ private fun SearchScreenContent(
                         is SearchResult.Video -> {
                             VideoItemCard(
                                 item = result.item,
-                                onClick = { onNavigateToVideo(result.id) },
+                                onClick = { onPlayVideo(result.id, VideoPlayMode.FOREGROUND) },
                                 onLongClick = { selectedMenuResult = result }
                             )
                         }
@@ -343,7 +346,7 @@ private fun SearchScreenPreview() {
             onTrySubmit = { true },
             onFilterClick = {},
             onShare = {},
-            onNavigateToVideo = {},
+            onPlayVideo = { _, _ -> },
             onNavigateToChannel = {},
             onNavigateToPlaylist = {}
         )

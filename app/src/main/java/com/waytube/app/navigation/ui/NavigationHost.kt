@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.waytube.app.channel.ui.ChannelScreen
+import com.waytube.app.common.ui.VideoPlayMode
 import com.waytube.app.navigation.domain.DeepLinkResult
 import com.waytube.app.playlist.ui.PlaylistScreen
 import com.waytube.app.search.ui.SearchScreen
@@ -157,9 +158,9 @@ fun NavigationHost(
                                 entry<SearchRoute> {
                                     SearchScreen(
                                         viewModel = koinViewModel(),
-                                        onNavigateToVideo = { id ->
+                                        onPlayVideo = { id, mode ->
                                             videoViewModel.play(id)
-                                            isVideoFullscreen = true
+                                            isVideoFullscreen = mode == VideoPlayMode.FOREGROUND
                                         },
                                         onNavigateToChannel = { id ->
                                             backStack += ChannelRoute(id)
@@ -175,9 +176,9 @@ fun NavigationHost(
                                 entry<ChannelRoute> { (id) ->
                                     ChannelScreen(
                                         viewModel = koinViewModel { parametersOf(id) },
-                                        onNavigateToVideo = { id ->
+                                        onPlayVideo = { id, mode ->
                                             videoViewModel.play(id)
-                                            isVideoFullscreen = true
+                                            isVideoFullscreen = mode == VideoPlayMode.FOREGROUND
                                         }
                                     )
                                 }
@@ -185,9 +186,9 @@ fun NavigationHost(
                                 entry<PlaylistRoute> { (id) ->
                                     PlaylistScreen(
                                         viewModel = koinViewModel { parametersOf(id) },
-                                        onNavigateToVideo = { id ->
+                                        onPlayVideo = { id, mode ->
                                             videoViewModel.play(id)
-                                            isVideoFullscreen = true
+                                            isVideoFullscreen = mode == VideoPlayMode.FOREGROUND
                                         },
                                         onNavigateToChannel = { id ->
                                             backStack += ChannelRoute(id)

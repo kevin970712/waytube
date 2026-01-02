@@ -61,7 +61,7 @@ private fun VideoNowPlayingBarContent(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 3.dp
                     )
                 }
 
@@ -82,6 +82,7 @@ private fun VideoNowPlayingBarContent(
 
                 Text(
                     text = stringResource(R.string.message_video_load_error),
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
